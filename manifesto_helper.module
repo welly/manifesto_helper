@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * @file
+ * Contains manifesto_helper.module
+ */
+
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Form\FormStateInterface;
+
+const REMOTE_API_URL = 'https://my-json-server.typicode.com/welly/manifesto_json/boroughs';
+
+/**
+ * Implements hook_field_widget_form_alter().
+ */
+function manifesto_helper_field_widget_form_alter(&$element, FormStateInterface $form_state, $context) {
+  $roles = Drupal::currentUser()->getRoles();
+  if (!in_array('administrator', $roles)) {
+    if ($context['items']->getName() === 'title') {
+      $form = $form_state->getFormObject();
+      $base_form_id = $form->getBaseFormId();
+      $bundle = $form->getEntity()->bundle();
+      if ($base_form_id == 'node_form' && $bundle == 'article') {
+        $element['value']['#description'] = t('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
+      }
+    }
+  }
+}
+
+/**
+ * Returns location and weather data for a supplied postcode.
+ */
+function manifesto_helper_get_location_data($postcode) {
+  $client = \Drupal::httpClient();
+  $request = $client->get(REMOTE_API_URL, ['query' => ['postcode' => $postcode]]);
+
+  if ($request->getStatusCode() != 200) {
+    return [
+      'borough' => 'Unknown',
+      'weather' => 'Unknown'
+    ];
+  }
+
+  $data = Json::decode($request->getBody());
+  return reset($data);
+}
