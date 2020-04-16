@@ -45,17 +45,19 @@ class WeatherBlock extends BlockBase implements ContainerFactoryPluginInterface 
    * {@inheritdoc}
    */
   public function build() {
-    $cacheableMetadata = new CacheableMetadata();
     $node = $this->routeMatch->getParameter('node');
     $postcode = $node->get('field_postcode')->value;
     $data = manifesto_helper_get_location_data($postcode);
+
     $build = [
-      '#markup' => $this->t('The weather in %location is %weather', ['%location' => $data['borough'], '%weather' => $data['weather']]),
+      '#markup' => $this->t('The weather in %borough is %weather', ['%borough' => $data['borough'], '%weather' => $data['weather']]),
     ];
+
+    $cacheableMetadata = new CacheableMetadata();
     $cacheableMetadata->setCacheContexts(['url']);
-    $cacheableMetadata->setCacheTags(['weather_block:' . $data['id']]);
-    $cacheableMetadata->setCacheMaxAge(0);
+    $cacheableMetadata->setCacheTags(['weather_block', 'weather_block:' . $data['id']]);
     $cacheableMetadata->applyTo($build);
+
     return $build;
   }
 
