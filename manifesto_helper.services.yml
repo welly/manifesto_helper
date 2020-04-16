@@ -1,0 +1,5 @@
+services:
+  manifesto_helper_subscriber:
+    class: Drupal\manifesto_helper\EventSubscriber\ManifestoHelperEventSubscriber
+    tags:
+      - {name: event_subscriber}
